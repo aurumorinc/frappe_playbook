@@ -1,0 +1,208 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:playbook_name",
+ "creation": "2026-05-23 00:03:05.678156",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_doc_events",
+  "document_type",
+  "playbook_name",
+  "provider",
+  "cb_doc_events",
+  "doc_event",
+  "is_active",
+  "method",
+  "date_changed",
+  "days_in_advance",
+  "value_changed",
+  "datetime_changed",
+  "minutes_offset",
+  "sb_condition",
+  "condition_type",
+  "condition",
+  "filters",
+  "cb_condition",
+  "condition_examples",
+  "sb_nodes",
+  "nodes",
+  "playbook_data"
+ ],
+ "fields": [
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Status",
+   "options": "Draft\nEnabled\nDisabled"
+  },
+  {
+   "default": "1",
+   "depends_on": "eval:doc.status !== 'Draft'",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active",
+   "read_only_depends_on": "eval:doc.status === 'Draft'"
+  },
+  {
+   "fieldname": "sb_doc_events",
+   "fieldtype": "Section Break",
+   "label": "Doc Events"
+  },
+  {
+   "fieldname": "cb_doc_events",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "playbook_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Playbook Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "provider",
+   "fieldtype": "Link",
+   "label": "Provider",
+   "options": "Playbook Provider"
+  },
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Document Type",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "doc_event",
+   "fieldtype": "Select",
+   "label": "Doc Event",
+   "options": "New\nSave\nSubmit\nCancel\nDays After\nDays Before\nMinutes After\nMinutes Before\nValue Change\nMethod\nCustom"
+  },
+  {
+   "depends_on": "eval:doc.doc_event=='Method'",
+   "fieldname": "method",
+   "fieldtype": "Data",
+   "label": "Method"
+  },
+  {
+   "depends_on": "eval:doc.doc_event in ['Days After', 'Days Before']",
+   "fieldname": "date_changed",
+   "fieldtype": "Select",
+   "label": "Date Changed"
+  },
+  {
+   "depends_on": "eval:doc.doc_event in ['Days After', 'Days Before']",
+   "fieldname": "days_in_advance",
+   "fieldtype": "Int",
+   "label": "Days"
+  },
+  {
+   "depends_on": "eval:doc.doc_event=='Value Change'",
+   "fieldname": "value_changed",
+   "fieldtype": "Select",
+   "label": "Value Changed"
+  },
+  {
+   "depends_on": "eval:doc.doc_event in ['Minutes After', 'Minutes Before']",
+   "fieldname": "datetime_changed",
+   "fieldtype": "Select",
+   "label": "Datetime Changed"
+  },
+  {
+   "depends_on": "eval:doc.doc_event in ['Minutes After', 'Minutes Before']",
+   "fieldname": "minutes_offset",
+   "fieldtype": "Int",
+   "label": "Minutes"
+  },
+  {
+   "fieldname": "sb_condition",
+   "fieldtype": "Section Break",
+   "label": "Playbook Trigger"
+  },
+  {
+   "default": "Python",
+   "fieldname": "condition_type",
+   "fieldtype": "Select",
+   "label": "Condition Type",
+   "options": "Python\nFilters"
+  },
+  {
+   "depends_on": "eval:doc.condition_type=='Python'",
+   "fieldname": "condition",
+   "fieldtype": "Code",
+   "label": "Condition",
+   "options": "Python"
+  },
+  {
+   "depends_on": "eval:doc.condition_type=='Filters'",
+   "fieldname": "filters",
+   "fieldtype": "Table",
+   "label": "Filters",
+   "options": "Playbook Filter"
+  },
+  {
+   "fieldname": "cb_condition",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "condition_examples",
+   "fieldtype": "HTML",
+   "options": "<p><strong>Condition Examples:</strong></p>\n<pre>doc.status==\"Open\"<br>doc.due_date==nowdate()<br>doc.total > 40000\n</pre>"
+  },
+  {
+   "fieldname": "sb_nodes",
+   "fieldtype": "Section Break",
+   "label": "Playbook Nodes"
+  },
+  {
+   "fieldname": "nodes",
+   "fieldtype": "Table",
+   "label": "Nodes",
+   "options": "Playbook Node"
+  },
+  {
+   "fieldname": "playbook_data",
+   "fieldtype": "JSON",
+   "hidden": 1,
+   "label": "Playbook Data"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Playbook Execution",
+   "link_fieldname": "playbook"
+  }
+ ],
+ "modified": "2026-05-23 01:48:28.282867",
+ "modified_by": "Administrator",
+ "module": "Playbook",
+ "name": "Playbook",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
