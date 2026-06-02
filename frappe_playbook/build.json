@@ -1,0 +1,5 @@
+{
+  "js/playbook_builder.bundle.js": [
+    "public/js/playbook_builder/playbook_builder.bundle.js"
+  ]
+}

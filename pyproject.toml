@@ -1,9 +1,9 @@
 [project]
 name = "frappe_playbook"
 authors = [
-    { name = "Aurumor", email = "hello@aurumor.com"}
+    { name = "Aquiveal", email = "aquiveal@example.com"}
 ]
-description = "App Description Placeholder"
+description = "Provider-Agnostic Playbook Architecture"
 requires-python = ">=3.14"
 readme = "README.md"
 dynamic = ["version"]
