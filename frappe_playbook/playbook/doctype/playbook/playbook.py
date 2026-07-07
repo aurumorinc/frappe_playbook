@@ -13,8 +13,9 @@ class Playbook(Document):
             except SyntaxError as e:
                 frappe.throw(f"Invalid Python condition: {str(e)}")
         elif self.condition_type == "Filters" and self.filters:
+            from frappe.model import default_fields
             for f in self.filters:
-                if not frappe.get_meta(self.document_type).has_field(f.fieldname) and not frappe.get_meta(self.document_type).has_standard_field(f.fieldname):
+                if not frappe.get_meta(self.document_type).has_field(f.fieldname) and f.fieldname not in default_fields:
                     frappe.throw(f"Field {f.fieldname} does not exist in DocType {self.document_type}")
         
         if self.status == "Draft":
@@ -127,3 +128,59 @@ def get_builder_url(playbook_name):
         provider_instance = get_provider_instance(doc.provider)
         return provider_instance.get_builder_url(doc)
     return None
+
+@frappe.whitelist()
+def trigger_test_execution(playbook_name):
+    playbook_doc = frappe.get_doc("Playbook", playbook_name)
+    
+    waiting_exec = frappe.get_all(
+        "Playbook Execution",
+        filters={"playbook": playbook_name, "status": "waiting"},
+        fields=["reference_doctype", "reference_name"],
+        order_by="creation desc",
+        limit=1
+    )
+    
+    target_doc = None
+    if waiting_exec:
+        target_doc = frappe.get_doc(waiting_exec[0].reference_doctype, waiting_exec[0].reference_name)
+    else:
+        recent_docs = frappe.get_all(
+            playbook_doc.document_type,
+            order_by="creation desc",
+            limit=50
+        )
+        for d in recent_docs:
+            doc_instance = frappe.get_doc(playbook_doc.document_type, d.name)
+            if playbook_doc.meets_condition(doc_instance):
+                target_doc = doc_instance
+                break
+                
+    if not target_doc:
+        return {"status": "failed", "message": "No matching document found."}
+        
+    payload = {"doc": target_doc.as_dict(convert_dates_to_str=True)}
+    idempotency_key = f"test-{playbook_doc.name}-{frappe.utils.now()}"
+    
+    if playbook_doc.provider:
+        provider_instance = get_provider_instance(playbook_doc.provider)
+        provider_instance.queue_test_execution(
+            playbook_doc,
+            target_doc.doctype,
+            target_doc.name,
+            payload,
+            idempotency_key,
+            as_child=False
+        )
+    else:
+        from frappe_playbook.playbook.doctype.playbook_execution.playbook_execution import queue_trigger_execution as native_queue_trigger_execution
+        native_queue_trigger_execution(
+            playbook_doc,
+            target_doc.doctype,
+            target_doc.name,
+            payload,
+            idempotency_key,
+            as_child=False
+        )
+        
+    return {"status": "success", "message": f"Test execution sent using {target_doc.doctype} {target_doc.name}"}

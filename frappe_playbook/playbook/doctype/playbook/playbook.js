@@ -50,6 +50,32 @@ frappe.ui.form.on("Playbook", {
 					frappe.msgprint("Native builder not implemented yet.");
 				}
 			});
+			
+			frm.add_custom_button(__("Test Execution"), function () {
+				frappe.call({
+					method: "frappe_playbook.playbook.doctype.playbook.playbook.trigger_test_execution",
+					args: {
+						playbook_name: frm.doc.name
+					},
+					freeze: true,
+					freeze_message: __("Triggering test execution..."),
+					callback: function (r) {
+						if (r.message && r.message.status === "success") {
+							frappe.msgprint({
+								title: __('Success'),
+								indicator: 'green',
+								message: r.message.message
+							});
+						} else if (r.message && r.message.status === "failed") {
+							frappe.msgprint({
+								title: __('No Document Found'),
+								indicator: 'orange',
+								message: r.message.message
+							});
+						}
+					}
+				});
+			});
 		}
 	},
 });
