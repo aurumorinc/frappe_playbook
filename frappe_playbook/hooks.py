@@ -1,14 +1,14 @@
 app_name = "frappe_playbook"
 app_title = "Frappe Playbook"
-app_publisher = "Aurumor"
-app_description = "App Description Placeholder"
-app_email = "hello@aurumor.com"
+app_publisher = "Aquiveal"
+app_description = "Provider-Agnostic Playbook Architecture"
+app_email = "aquiveal@example.com"
 app_license = "mit"
 
 # Apps
 # ------------------
 
-# required_apps = []
+required_apps = ["frappe_controller"]
 
 # Each item in the list will be shown as an app in the apps page
 # add_to_apps_screen = [
@@ -250,3 +250,39 @@ app_license = "mit"
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
 
+
+fixtures = [
+    {"dt": "Custom Field", "filters": [
+        [
+            "name", "in", [
+                "ToDo-playbook_execution",
+                "ToDo-todo_template",
+                "ToDo-callback_url",
+                "ToDo-response_body"
+            ]
+        ]
+    ]}
+]
+
+doc_events = {
+    "*": {
+        "after_insert": "frappe_playbook.playbook.doctype.playbook.playbook.create_playbook_event",
+        "on_update": "frappe_playbook.playbook.doctype.playbook.playbook.create_playbook_event",
+        "on_submit": "frappe_playbook.playbook.doctype.playbook.playbook.create_playbook_event",
+        "on_cancel": "frappe_playbook.playbook.doctype.playbook.playbook.create_playbook_event",
+        "on_trash": "frappe_playbook.playbook.doctype.playbook.playbook.create_playbook_event",
+        "on_update_after_submit": "frappe_playbook.playbook.doctype.playbook.playbook.create_playbook_event",
+    },
+    "ToDo": {
+        "on_update": "frappe_playbook.playbook.doctype.todo.todo.on_update"
+    }
+}
+
+controller_events = {
+    "Playbook Execution": [
+        {
+            "method": "frappe_playbook.playbook.doctype.playbook_execution.playbook_execution.run",
+            "rate_limit_per_minute": 50
+        }
+    ]
+}

@@ -1,6 +1,6 @@
 ### Frappe Playbook
 
-App Description Placeholder
+Provider-Agnostic Playbook Architecture
 
 ### Installation
 

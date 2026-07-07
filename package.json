@@ -1,0 +1,16 @@
+{
+  "name": "frappe_playbook",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@aquiveal:aurumorinc/frappe_playbook.git",
+  "author": "Your Name <you@example.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@vue-flow/background": "^1.3.2",
+    "@vue-flow/controls": "^1.1.3",
+    "@vue-flow/core": "^1.48.2",
+    "@vue-flow/minimap": "^1.5.4",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.34"
+  }
+}
