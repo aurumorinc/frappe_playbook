@@ -18,6 +18,9 @@ class PlaybookProviderBase:
     def queue_trigger_execution(self, playbook_doc, reference_doctype, reference_name, payload, idempotency_key, as_child=True):
         raise NotImplementedError
         
+    def queue_test_execution(self, playbook_doc, reference_doctype, reference_name, payload, idempotency_key, as_child=True):
+        raise NotImplementedError
+        
     def queue_resume_execution(self, execution_doc, response_body, callback_url, idempotency_key=None):
         raise NotImplementedError
         
