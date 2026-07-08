@@ -34,11 +34,11 @@ class TestPlaybookTestExecutionIntegration(IntegrationTestCase):
 
         frappe.get_doc({
             "doctype": "Playbook Execution",
+            "name": f"test-{frappe.generate_hash(length=8)}",
             "playbook": playbook.name,
             "reference_doctype": "ToDo",
             "reference_name": todo.name,
-            "status": "waiting",
-            "idempotency_key": "initial-waiting-key"
+            "status": "waiting"
         }).insert(ignore_permissions=True)
 
         # Act

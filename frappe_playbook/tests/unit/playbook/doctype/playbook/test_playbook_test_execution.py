@@ -11,11 +11,11 @@ class TestPlaybookTestExecutionUnit(unittest.TestCase):
         self.playbook_doc.provider = None
         self.playbook_doc.meets_condition.return_value = True
 
-    @patch("frappe_playbook.playbook.doctype.playbook.playbook.frappe.utils.now", return_value="2024-01-01 12:00:00")
+    @patch("frappe_playbook.playbook.doctype.playbook.playbook.frappe.generate_hash", return_value="abcdefghij")
     @patch("frappe_playbook.playbook.doctype.playbook.playbook.frappe.get_doc")
     @patch("frappe_playbook.playbook.doctype.playbook.playbook.frappe.get_all")
     @patch("frappe_playbook.playbook.doctype.playbook_execution.playbook_execution.queue_trigger_execution")
-    def test_prioritizes_waiting_executions(self, mock_queue, mock_get_all, mock_get_doc, mock_now):
+    def test_prioritizes_waiting_executions(self, mock_queue, mock_get_all, mock_get_doc, mock_generate_hash):
         # Arrange
         # mock_get_doc should return the playbook first, then the target doc
         target_doc = MagicMock()
@@ -46,7 +46,7 @@ class TestPlaybookTestExecutionUnit(unittest.TestCase):
         self.assertEqual(args[0], self.playbook_doc)
         self.assertEqual(args[1], "Test Doc")
         self.assertEqual(args[2], "TEST-001")
-        self.assertEqual(args[3], {"doc": {"name": "TEST-001"}})
+        self.assertEqual(args[3], {"name": "TEST-001"})
         self.assertTrue(args[4].startswith("test-Test Playbook-"))
         
         # Verify get_all was called for Playbook Execution
@@ -58,11 +58,11 @@ class TestPlaybookTestExecutionUnit(unittest.TestCase):
             limit=1
         )
 
-    @patch("frappe_playbook.playbook.doctype.playbook.playbook.frappe.utils.now", return_value="2024-01-01 12:00:00")
+    @patch("frappe_playbook.playbook.doctype.playbook.playbook.frappe.generate_hash", return_value="abcdefghij")
     @patch("frappe_playbook.playbook.doctype.playbook.playbook.frappe.get_doc")
     @patch("frappe_playbook.playbook.doctype.playbook.playbook.frappe.get_all")
     @patch("frappe_playbook.playbook.doctype.playbook_execution.playbook_execution.queue_trigger_execution")
-    def test_fallback_to_condition_matching(self, mock_queue, mock_get_all, mock_get_doc, mock_now):
+    def test_fallback_to_condition_matching(self, mock_queue, mock_get_all, mock_get_doc, mock_generate_hash):
         # Arrange
         doc1 = MagicMock()
         doc1.name = "TEST-002"
@@ -119,12 +119,12 @@ class TestPlaybookTestExecutionUnit(unittest.TestCase):
         self.assertEqual(result, {"status": "failed", "message": "No matching document found."})
         mock_queue.assert_not_called()
 
-    @patch("frappe_playbook.playbook.doctype.playbook.playbook.frappe.utils.now", return_value="2024-01-01 12:00:00")
+    @patch("frappe_playbook.playbook.doctype.playbook.playbook.frappe.generate_hash", return_value="abcdefghij")
     @patch("frappe_playbook.playbook.doctype.playbook.playbook.get_provider_instance")
     @patch("frappe_playbook.playbook.doctype.playbook.playbook.frappe.get_doc")
     @patch("frappe_playbook.playbook.doctype.playbook.playbook.frappe.get_all")
     @patch("frappe_playbook.playbook.doctype.playbook_execution.playbook_execution.queue_trigger_execution")
-    def test_external_provider_routing(self, mock_queue, mock_get_all, mock_get_doc, mock_get_provider, mock_now):
+    def test_external_provider_routing(self, mock_queue, mock_get_all, mock_get_doc, mock_get_provider, mock_generate_hash):
         # Arrange
         self.playbook_doc.provider = "n8n"
         
