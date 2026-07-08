@@ -32,6 +32,7 @@ class TestToDoIntegration(IntegrationTestCase):
 
         execution = frappe.get_doc({
             "doctype": "Playbook Execution",
+            "name": f"test-{frappe.generate_hash(length=8)}",
             "playbook": playbook.name,
             "reference_doctype": "ToDo",
             "reference_name": "Test",
@@ -59,7 +60,7 @@ class TestToDoIntegration(IntegrationTestCase):
         self.assertEqual(args[0].name, execution.name)
         self.assertEqual(args[1], '{"result": "ok"}')
         self.assertEqual(args[2], "http://example.com/callback")
-        self.assertIsNotNone(args[3]) # idempotency_key
+        self.assertIsNotNone(args[3]) # execution_name
 
     @patch("frappe_playbook.playbook.doctype.todo.todo.native_queue_resume_execution")
     def test_resume_execution_native(self, mock_native_resume):
@@ -74,6 +75,7 @@ class TestToDoIntegration(IntegrationTestCase):
 
         execution = frappe.get_doc({
             "doctype": "Playbook Execution",
+            "name": f"test-{frappe.generate_hash(length=8)}",
             "playbook": playbook.name,
             "reference_doctype": "ToDo",
             "reference_name": "Test",
@@ -111,6 +113,7 @@ class TestToDoIntegration(IntegrationTestCase):
 
         execution = frappe.get_doc({
             "doctype": "Playbook Execution",
+            "name": f"test-{frappe.generate_hash(length=8)}",
             "playbook": playbook.name,
             "reference_doctype": "ToDo",
             "reference_name": "Test",

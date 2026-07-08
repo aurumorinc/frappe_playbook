@@ -7,10 +7,10 @@ def on_update(doc, method):
         execution_doc = frappe.get_doc("Playbook Execution", doc.playbook_execution)
         playbook_doc = frappe.get_doc("Playbook", execution_doc.playbook)
         
-        idempotency_key = frappe.generate_hash(f"{doc.name}-{doc.modified}", length=10)
+        execution_name = frappe.generate_hash(f"{doc.name}-{doc.modified}", length=10)
         
         if playbook_doc.provider:
             provider = get_provider_instance(playbook_doc.provider)
-            provider.queue_resume_execution(execution_doc, doc.response_body, doc.callback_url, idempotency_key)
+            provider.queue_resume_execution(execution_doc, doc.response_body, doc.callback_url, execution_name)
         else:
             native_queue_resume_execution(execution_doc, doc.response_body)

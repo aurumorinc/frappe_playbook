@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "Prompt",
  "creation": "2026-05-23 00:03:06.212886",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -10,7 +11,6 @@
   "status",
   "reference_doctype",
   "reference_name",
-  "idempotency_key",
   "execution_data"
  ],
  "fields": [
@@ -40,13 +40,6 @@
    "fieldtype": "Dynamic Link",
    "label": "Reference Name",
    "options": "reference_doctype"
-  },
-  {
-   "fieldname": "idempotency_key",
-   "fieldtype": "Data",
-   "label": "Idempotency Key",
-   "read_only": 1,
-   "unique": 1
   },
   {
    "fieldname": "execution_data",

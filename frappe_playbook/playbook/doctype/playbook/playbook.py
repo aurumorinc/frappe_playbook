@@ -159,8 +159,8 @@ def trigger_test_execution(playbook_name):
     if not target_doc:
         return {"status": "failed", "message": "No matching document found."}
         
-    payload = {"doc": target_doc.as_dict(convert_dates_to_str=True)}
-    idempotency_key = f"test-{playbook_doc.name}-{frappe.utils.now()}"
+    payload = target_doc.as_dict(convert_dates_to_str=True)
+    execution_name = f"test-{playbook_doc.name}-{frappe.generate_hash(length=10)}"
     
     if playbook_doc.provider:
         provider_instance = get_provider_instance(playbook_doc.provider)
@@ -169,7 +169,7 @@ def trigger_test_execution(playbook_name):
             target_doc.doctype,
             target_doc.name,
             payload,
-            idempotency_key,
+            execution_name,
             as_child=False
         )
     else:
@@ -179,7 +179,7 @@ def trigger_test_execution(playbook_name):
             target_doc.doctype,
             target_doc.name,
             payload,
-            idempotency_key,
+            execution_name,
             as_child=False
         )
         

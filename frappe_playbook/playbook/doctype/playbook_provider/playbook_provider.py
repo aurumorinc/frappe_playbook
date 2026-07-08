@@ -15,13 +15,13 @@ class PlaybookProviderBase:
         """Activate or deactivate the workflow in the external provider"""
         raise NotImplementedError
         
-    def queue_trigger_execution(self, playbook_doc, reference_doctype, reference_name, payload, idempotency_key, as_child=True):
+    def queue_trigger_execution(self, playbook_doc, reference_doctype, reference_name, payload, execution_name, as_child=True):
         raise NotImplementedError
         
-    def queue_test_execution(self, playbook_doc, reference_doctype, reference_name, payload, idempotency_key, as_child=True):
+    def queue_test_execution(self, playbook_doc, reference_doctype, reference_name, payload, execution_name, as_child=True):
         raise NotImplementedError
         
-    def queue_resume_execution(self, execution_doc, response_body, callback_url, idempotency_key=None):
+    def queue_resume_execution(self, execution_doc, response_body, callback_url, execution_name=None):
         raise NotImplementedError
         
     def get_execution_status(self, execution_id):

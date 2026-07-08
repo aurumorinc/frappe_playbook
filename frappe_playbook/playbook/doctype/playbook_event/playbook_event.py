@@ -32,8 +32,8 @@ def queue_trigger_execution(event_name):
     for pb in playbooks:
         playbook_doc = frappe.get_doc("Playbook", pb.name)
         if playbook_doc.meets_condition(doc):
-            payload = {"doc": doc.as_dict(convert_dates_to_str=True)}
-            idempotency_key = f"{playbook_doc.name}-{event_doc.name}"
+            payload = doc.as_dict(convert_dates_to_str=True)
+            execution_name = f"{playbook_doc.name}-{event_doc.name}"
             
             if playbook_doc.provider:
                 provider_instance = get_provider_instance(playbook_doc.provider)
@@ -42,7 +42,7 @@ def queue_trigger_execution(event_name):
                     doc.doctype,
                     doc.name,
                     payload,
-                    idempotency_key,
+                    execution_name,
                     as_child=False
                 )
             else:
@@ -51,6 +51,6 @@ def queue_trigger_execution(event_name):
                     doc.doctype,
                     doc.name,
                     payload,
-                    idempotency_key,
+                    execution_name,
                     as_child=False
                 )

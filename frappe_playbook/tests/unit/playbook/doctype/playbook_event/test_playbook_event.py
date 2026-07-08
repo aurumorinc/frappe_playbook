@@ -156,7 +156,7 @@ class TestPlaybookEvent(IntegrationTestCase):
         self.assertTrue(mock_native_queue.call_count >= 1)
 
     @patch("frappe_playbook.playbook.doctype.playbook_execution.playbook_execution.queue_trigger_execution")
-    def test_concurrency_idempotency_key_generation(self, mock_native_queue):
+    def test_concurrency_execution_name_generation(self, mock_native_queue):
         playbook = frappe.get_doc({
             "doctype": "Playbook",
             "playbook_name": f"Test Concurrency {frappe.generate_hash()}",
@@ -196,9 +196,9 @@ class TestPlaybookEvent(IntegrationTestCase):
         args1, kwargs1 = calls[0]
         args2, kwargs2 = calls[1]
         
-        idempotency_key1 = args1[4]
-        idempotency_key2 = args2[4]
+        execution_name1 = args1[4]
+        execution_name2 = args2[4]
         
-        self.assertNotEqual(idempotency_key1, idempotency_key2)
-        self.assertEqual(idempotency_key1, f"{playbook.name}-{event1.name}")
-        self.assertEqual(idempotency_key2, f"{playbook.name}-{event2.name}")
+        self.assertNotEqual(execution_name1, execution_name2)
+        self.assertEqual(execution_name1, f"{playbook.name}-{event1.name}")
+        self.assertEqual(execution_name2, f"{playbook.name}-{event2.name}")

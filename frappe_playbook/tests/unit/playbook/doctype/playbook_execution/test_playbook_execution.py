@@ -19,11 +19,22 @@ class TestPlaybookExecution(IntegrationTestCase):
         frappe.db.rollback()
 
     def test_valid_status_transition(self):
+        playbook = frappe.get_doc({
+            "doctype": "Playbook",
+            "playbook_name": "Test Playbook",
+            "document_type": "ToDo",
+            "doc_event": "New",
+            "status": "Enabled",
+            "is_active": 1
+        }).insert()
+        todo = frappe.get_doc({"doctype": "ToDo", "description": "test"}).insert()
+
         execution = frappe.get_doc({
             "doctype": "Playbook Execution",
-            "playbook": "Test Playbook",
+            "name": f"test-{frappe.generate_hash(length=8)}",
+            "playbook": playbook.name,
             "reference_doctype": "ToDo",
-            "reference_name": "Test",
+            "reference_name": todo.name,
             "status": "running"
         }).insert(ignore_permissions=True, ignore_links=True)
 
@@ -32,11 +43,22 @@ class TestPlaybookExecution(IntegrationTestCase):
         self.assertEqual(execution.status, "success")
 
     def test_invalid_status_transition(self):
+        playbook = frappe.get_doc({
+            "doctype": "Playbook",
+            "playbook_name": "Test Playbook",
+            "document_type": "ToDo",
+            "doc_event": "New",
+            "status": "Enabled",
+            "is_active": 1
+        }).insert()
+        todo = frappe.get_doc({"doctype": "ToDo", "description": "test"}).insert()
+        
         execution = frappe.get_doc({
             "doctype": "Playbook Execution",
-            "playbook": "Test Playbook",
+            "name": f"test-{frappe.generate_hash(length=8)}",
+            "playbook": playbook.name,
             "reference_doctype": "ToDo",
-            "reference_name": "Test",
+            "reference_name": todo.name,
             "status": "success"
         }).insert(ignore_permissions=True, ignore_links=True)
 
@@ -57,11 +79,14 @@ class TestPlaybookExecution(IntegrationTestCase):
             "provider": "DummyProvider"
         }).insert(ignore_links=True)
 
+        todo = frappe.get_doc({"doctype": "ToDo", "description": "test"}).insert()
+
         execution = frappe.get_doc({
             "doctype": "Playbook Execution",
+            "name": f"test-{frappe.generate_hash(length=8)}",
             "playbook": playbook.name,
             "reference_doctype": "ToDo",
-            "reference_name": "Test",
+            "reference_name": todo.name,
             "status": "running"
         }).insert(ignore_permissions=True, ignore_links=True)
 
@@ -87,11 +112,14 @@ class TestPlaybookExecution(IntegrationTestCase):
             "provider": "DummyProvider"
         }).insert(ignore_links=True)
 
+        todo = frappe.get_doc({"doctype": "ToDo", "description": "test"}).insert()
+
         execution = frappe.get_doc({
             "doctype": "Playbook Execution",
+            "name": f"test-{frappe.generate_hash(length=8)}",
             "playbook": playbook.name,
             "reference_doctype": "ToDo",
-            "reference_name": "Test",
+            "reference_name": todo.name,
             "status": "running"
         }).insert(ignore_permissions=True, ignore_links=True)
 
@@ -107,7 +135,7 @@ class TestPlaybookExecution(IntegrationTestCase):
         mock_msgprint.assert_called_once()
 
     def test_native_execution_idempotency(self):
-        idempotency_key = "test-idempotency-key"
+        execution_name = "test-idempotency-key"
         
         playbook = frappe.get_doc({
             "doctype": "Playbook",
@@ -124,13 +152,13 @@ class TestPlaybookExecution(IntegrationTestCase):
         }).insert()
 
         # First run
-        run(playbook.name, "ToDo", todo.name, {}, idempotency_key)
+        run(playbook.name, "ToDo", todo.name, {}, execution_name)
         
-        executions = frappe.get_all("Playbook Execution", filters={"idempotency_key": idempotency_key})
+        executions = frappe.get_all("Playbook Execution", filters={"name": execution_name})
         self.assertEqual(len(executions), 1)
         
         # Second run with same key
-        run(playbook.name, "ToDo", todo.name, {}, idempotency_key)
+        run(playbook.name, "ToDo", todo.name, {}, execution_name)
         
-        executions_after = frappe.get_all("Playbook Execution", filters={"idempotency_key": idempotency_key})
+        executions_after = frappe.get_all("Playbook Execution", filters={"name": execution_name})
         self.assertEqual(len(executions_after), 1)
