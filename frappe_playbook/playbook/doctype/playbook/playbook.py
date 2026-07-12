@@ -6,6 +6,11 @@ from frappe_controller.utils.background_jobs import enqueue
 
 class Playbook(Document):
     def validate(self):
+        if not self.provider:
+            default_provider = frappe.db.get_value("Playbook Provider", {"is_default": 1, "enabled": 1}, "name")
+            if default_provider:
+                self.provider = default_provider
+
         if self.condition_type == "Python" and self.condition:
             import ast
             try:
@@ -19,16 +24,36 @@ class Playbook(Document):
                     frappe.throw(f"Field {f.fieldname} does not exist in DocType {self.document_type}")
         
         if self.status == "Draft":
-            self.is_active = 0
+            self.enabled = 0
         elif self.status in ["Enabled", "Disabled"]:
-            self.status = "Enabled" if self.is_active else "Disabled"
+            self.status = "Enabled" if self.enabled else "Disabled"
+
+    def before_save(self):
+        if not self.is_new():
+            doc_before_save = self.get_doc_before_save()
+            if doc_before_save and doc_before_save.provider and doc_before_save.provider == self.provider:
+                field_name = f"{self.provider.lower()}_workflow_id"
+                if self.meta.has_field(field_name):
+                    old_val = frappe.db.get_value("Playbook", self.name, field_name)
+                    if old_val and not self.get(field_name):
+                        self.set(field_name, old_val)
 
     def after_insert(self):
         if self.status == "Draft" or self.provider:
             enqueue("frappe_playbook.playbook.doctype.playbook.playbook.update_workflow", playbook_name=self.name)
 
     def on_update(self):
-        if self.has_value_changed("status") or self.has_value_changed("is_active") or self.has_value_changed("provider"):
+        doc_before_save = self.get_doc_before_save()
+        provider_changed = False
+        
+        if doc_before_save and doc_before_save.provider != self.provider:
+            provider_changed = True
+            if doc_before_save.provider:
+                old_workflow_id = self.get(f"{doc_before_save.provider.lower()}_workflow_id") or frappe.db.get_value("Playbook", self.name, f"{doc_before_save.provider.lower()}_workflow_id")
+                if old_workflow_id:
+                    enqueue("frappe_playbook.playbook.doctype.playbook_provider.playbook_provider.delete_workflow", provider=doc_before_save.provider, workflow_id=old_workflow_id)
+
+        if self.has_value_changed("status") or self.has_value_changed("enabled") or provider_changed:
             enqueue("frappe_playbook.playbook.doctype.playbook.playbook.update_workflow", playbook_name=self.name)
 
     def meets_condition(self, doc: Document) -> bool:
@@ -61,27 +86,13 @@ def create_playbook_event(doc, method):
     if doc.doctype in ("FS Job", "FS Event", "FS Match Condition", "Error Log", "Controller Job Log", "Controller Job Type", "Playbook Execution", "Playbook Event"):
         return
 
-    # Map Frappe doc events to Playbook doc events
-    event_map = {
-        "after_insert": "New",
-        "on_update": "Save",
-        "on_submit": "Submit",
-        "on_cancel": "Cancel",
-        "on_trash": "Trash",
-        "on_update_after_submit": "Save"
-    }
-
-    playbook_event = event_map.get(method)
-    if not playbook_event:
-        return
-
-    # Only create event if there is at least one active playbook for this doctype and event
+    # Only create event if there is at least one enabled playbook for this doctype and event
     has_playbooks = frappe.db.exists(
         "Playbook",
         {
             "document_type": doc.doctype,
-            "doc_event": playbook_event,
-            "is_active": 1
+            "doc_event": method,
+            "enabled": 1
         }
     )
     
@@ -90,7 +101,7 @@ def create_playbook_event(doc, method):
             "doctype": "Playbook Event",
             "reference_doctype": doc.doctype,
             "reference_name": doc.name,
-            "event_type": playbook_event
+            "event_type": method
         })
         event_doc.insert(ignore_permissions=True)
 
@@ -112,13 +123,13 @@ def update_workflow(playbook_name):
                 if playbook_doc.meta.has_field(field_name):
                     playbook_doc.db_set(field_name, workflow_id)
         
-        provider_instance.toggle_workflow_status(playbook_doc, bool(playbook_doc.is_active))
+        provider_instance.toggle_workflow_status(playbook_doc, bool(playbook_doc.enabled))
         
-        playbook_doc.db_set('status', 'Enabled' if playbook_doc.is_active else 'Disabled')
+        playbook_doc.db_set('status', 'Enabled' if playbook_doc.enabled else 'Disabled')
     except Exception as e:
         frappe.log_error(f"Failed to sync workflow for Playbook {playbook_doc.name}: {str(e)}", "Playbook Provider Error")
         playbook_doc.db_set('status', 'Draft')
-        playbook_doc.db_set('is_active', 0)
+        playbook_doc.db_set('enabled', 0)
         raise
 
 @frappe.whitelist()

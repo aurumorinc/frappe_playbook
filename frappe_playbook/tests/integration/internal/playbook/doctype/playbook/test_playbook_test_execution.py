@@ -20,10 +20,10 @@ class TestPlaybookTestExecutionIntegration(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Integration Test Playbook Waiting",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "condition_type": "Python",
             "condition": "True",
-            "is_active": 1,
+            "enabled": 1,
             "provider": ""
         }).insert(ignore_permissions=True)
 
@@ -60,10 +60,10 @@ class TestPlaybookTestExecutionIntegration(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Integration Test Playbook Matching",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "condition_type": "Python",
             "condition": "doc.description == 'Target Description'",
-            "is_active": 1,
+            "enabled": 1,
             "provider": ""
         }).insert(ignore_permissions=True)
 

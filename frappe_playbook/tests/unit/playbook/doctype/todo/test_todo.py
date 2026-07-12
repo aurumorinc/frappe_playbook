@@ -24,9 +24,9 @@ class TestToDoIntegration(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test ToDo Provider",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1,
+            "enabled": 1,
             "provider": "DummyProvider"
         }).insert(ignore_links=True)
 
@@ -68,9 +68,9 @@ class TestToDoIntegration(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test ToDo Native",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1
+            "enabled": 1
         }).insert(ignore_links=True)
 
         execution = frappe.get_doc({
@@ -106,9 +106,9 @@ class TestToDoIntegration(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test ToDo Not Closed",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1
+            "enabled": 1
         }).insert(ignore_links=True)
 
         execution = frappe.get_doc({
