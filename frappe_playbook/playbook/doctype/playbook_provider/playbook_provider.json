@@ -8,7 +8,8 @@
  "engine": "InnoDB",
  "field_order": [
   "provider_name",
-  "enabled"
+  "enabled",
+  "is_default"
  ],
  "fields": [
   {
@@ -23,7 +24,13 @@
    "default": "1",
    "fieldname": "enabled",
    "fieldtype": "Check",
-   "label": "Is Enabled"
+   "label": "Enabled"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "label": "Is Default"
   }
  ],
  "grid_page_length": 50,

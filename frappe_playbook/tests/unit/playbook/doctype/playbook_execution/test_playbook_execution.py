@@ -23,9 +23,9 @@ class TestPlaybookExecution(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Playbook",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1
+            "enabled": 1
         }).insert()
         todo = frappe.get_doc({"doctype": "ToDo", "description": "test"}).insert()
 
@@ -47,9 +47,9 @@ class TestPlaybookExecution(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Playbook",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1
+            "enabled": 1
         }).insert()
         todo = frappe.get_doc({"doctype": "ToDo", "description": "test"}).insert()
         
@@ -73,9 +73,9 @@ class TestPlaybookExecution(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Cancel Playbook",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1,
+            "enabled": 1,
             "provider": "DummyProvider"
         }).insert(ignore_links=True)
 
@@ -106,9 +106,9 @@ class TestPlaybookExecution(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Cancel Fail Playbook",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1,
+            "enabled": 1,
             "provider": "DummyProvider"
         }).insert(ignore_links=True)
 
@@ -141,9 +141,9 @@ class TestPlaybookExecution(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": f"Test Idempotency Playbook {frappe.generate_hash()}",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1
+            "enabled": 1
         }).insert(ignore_links=True)
 
         todo = frappe.get_doc({

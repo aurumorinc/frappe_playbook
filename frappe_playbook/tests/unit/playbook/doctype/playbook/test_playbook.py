@@ -23,7 +23,7 @@ class TestPlaybook(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Python Playbook",
             "document_type": "ToDo",
-            "doc_event": "Save",
+            "doc_event": "on_update",
             "condition_type": "Python",
             "condition": "doc.status == 'Open'",
             "status": "Draft"
@@ -35,7 +35,7 @@ class TestPlaybook(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Filters Playbook",
             "document_type": "ToDo",
-            "doc_event": "Save",
+            "doc_event": "on_update",
             "condition_type": "Filters",
             "filters": [{"fieldname": "status", "operator": "=", "value": "Open"}],
             "status": "Draft"
@@ -47,7 +47,7 @@ class TestPlaybook(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Invalid Python",
             "document_type": "ToDo",
-            "doc_event": "Save",
+            "doc_event": "on_update",
             "condition_type": "Python",
             "condition": "if doc.status == 'Open'",
             "status": "Draft"
@@ -61,7 +61,7 @@ class TestPlaybook(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Invalid Filters",
             "document_type": "ToDo",
-            "doc_event": "Save",
+            "doc_event": "on_update",
             "condition_type": "Filters",
             "filters": [{"fieldname": "non_existent_field", "operator": "=", "value": "Open"}],
             "status": "Draft"
@@ -75,11 +75,11 @@ class TestPlaybook(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Draft Playbook",
             "document_type": "ToDo",
-            "doc_event": "Save",
+            "doc_event": "on_update",
             "status": "Draft",
-            "is_active": 1
+            "enabled": 1
         }).insert(ignore_links=True)
-        self.assertEqual(doc.is_active, 0)
+        self.assertEqual(doc.enabled, 0)
 
     @patch("frappe_playbook.playbook.doctype.playbook.playbook.enqueue")
     def test_sync_workflow_on_insert_with_provider(self, mock_enqueue):
@@ -87,7 +87,7 @@ class TestPlaybook(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Provider Playbook",
             "document_type": "ToDo",
-            "doc_event": "Save",
+            "doc_event": "on_update",
             "status": "Draft",
             "provider": "DummyProvider"
         }).insert(ignore_links=True)
@@ -98,7 +98,7 @@ class TestPlaybook(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Python True",
             "document_type": "ToDo",
-            "doc_event": "Save",
+            "doc_event": "on_update",
             "condition_type": "Python",
             "condition": "doc.status == 'Open'",
             "status": "Draft"
@@ -113,7 +113,7 @@ class TestPlaybook(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Python Exception",
             "document_type": "ToDo",
-            "doc_event": "Save",
+            "doc_event": "on_update",
             "condition_type": "Python",
             "condition": "1 / 0",
             "status": "Draft"
@@ -128,7 +128,7 @@ class TestPlaybook(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Filters True",
             "document_type": "ToDo",
-            "doc_event": "Save",
+            "doc_event": "on_update",
             "condition_type": "Filters",
             "filters": [{"fieldname": "status", "operator": "=", "value": "Open"}],
             "status": "Draft"
@@ -143,7 +143,7 @@ class TestPlaybook(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Security",
             "document_type": "ToDo",
-            "doc_event": "Save",
+            "doc_event": "on_update",
             "condition_type": "Python",
             "condition": "__import__('os').system('echo hacked')",
             "status": "Draft"

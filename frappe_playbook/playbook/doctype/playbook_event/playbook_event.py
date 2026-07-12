@@ -22,7 +22,7 @@ def queue_trigger_execution(event_name):
         filters={
             "document_type": doc.doctype,
             "doc_event": event_doc.event_type,
-            "is_active": 1
+            "enabled": 1
         }
     )
     

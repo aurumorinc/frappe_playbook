@@ -25,9 +25,9 @@ class TestPlaybookEvent(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Event Insert",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1
+            "enabled": 1
         }).insert(ignore_links=True)
 
         # Insert a ToDo
@@ -37,12 +37,12 @@ class TestPlaybookEvent(IntegrationTestCase):
         }).insert(ignore_links=True)
 
         # Check if Playbook Event was created
-        events = frappe.get_all("Playbook Event", filters={"reference_doctype": "ToDo", "reference_name": todo.name, "event_type": "New"})
+        events = frappe.get_all("Playbook Event", filters={"reference_doctype": "ToDo", "reference_name": todo.name, "event_type": "after_insert"})
         self.assertTrue(len(events) > 0)
 
     def test_no_event_if_no_active_playbook(self):
         # Ensure no active playbooks for ToDo Save
-        frappe.db.set_value("Playbook", {"document_type": "ToDo", "doc_event": "Save"}, "is_active", 0)
+        frappe.db.set_value("Playbook", {"document_type": "ToDo", "doc_event": "on_update"}, "enabled", 0)
 
         todo = frappe.get_doc({
             "doctype": "ToDo",
@@ -53,7 +53,7 @@ class TestPlaybookEvent(IntegrationTestCase):
         todo.description = "Updated"
         todo.save()
 
-        events = frappe.get_all("Playbook Event", filters={"reference_doctype": "ToDo", "reference_name": todo.name, "event_type": "Save"})
+        events = frappe.get_all("Playbook Event", filters={"reference_doctype": "ToDo", "reference_name": todo.name, "event_type": "on_update"})
         self.assertEqual(len(events), 0)
 
     def test_no_event_for_ignored_doctypes(self):
@@ -61,9 +61,9 @@ class TestPlaybookEvent(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Ignored Doctype",
             "document_type": "Error Log",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1
+            "enabled": 1
         }).insert(ignore_links=True)
 
         error_log = frappe.get_doc({
@@ -79,9 +79,9 @@ class TestPlaybookEvent(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Import Flag",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1
+            "enabled": 1
         }).insert(ignore_links=True)
 
         frappe.flags.in_import = True
@@ -93,7 +93,7 @@ class TestPlaybookEvent(IntegrationTestCase):
         finally:
             frappe.flags.in_import = False
 
-        events = frappe.get_all("Playbook Event", filters={"reference_doctype": "ToDo", "reference_name": todo.name, "event_type": "New"})
+        events = frappe.get_all("Playbook Event", filters={"reference_doctype": "ToDo", "reference_name": todo.name, "event_type": "after_insert"})
         self.assertEqual(len(events), 0)
 
     @patch("frappe_playbook.playbook.doctype.playbook_provider.playbook_provider.get_provider_instance")
@@ -102,9 +102,9 @@ class TestPlaybookEvent(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Queue Provider",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1,
+            "enabled": 1,
             "provider": "DummyProvider"
         }).insert(ignore_links=True)
 
@@ -117,7 +117,7 @@ class TestPlaybookEvent(IntegrationTestCase):
             "doctype": "Playbook Event",
             "reference_doctype": "ToDo",
             "reference_name": todo.name,
-            "event_type": "New"
+            "event_type": "after_insert"
         }).insert(ignore_links=True)
 
         mock_provider = MagicMock()
@@ -134,9 +134,9 @@ class TestPlaybookEvent(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": "Test Queue Native",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1
+            "enabled": 1
         }).insert(ignore_links=True)
 
         todo = frappe.get_doc({
@@ -148,7 +148,7 @@ class TestPlaybookEvent(IntegrationTestCase):
             "doctype": "Playbook Event",
             "reference_doctype": "ToDo",
             "reference_name": todo.name,
-            "event_type": "New"
+            "event_type": "after_insert"
         }).insert(ignore_links=True)
 
         queue_trigger_execution(event.name)
@@ -161,9 +161,9 @@ class TestPlaybookEvent(IntegrationTestCase):
             "doctype": "Playbook",
             "playbook_name": f"Test Concurrency {frappe.generate_hash()}",
             "document_type": "ToDo",
-            "doc_event": "New",
+            "doc_event": "after_insert",
             "status": "Enabled",
-            "is_active": 1
+            "enabled": 1
         }).insert(ignore_links=True)
 
         todo = frappe.get_doc({
@@ -180,7 +180,7 @@ class TestPlaybookEvent(IntegrationTestCase):
             "doctype": "Playbook Event",
             "reference_doctype": "ToDo",
             "reference_name": todo.name,
-            "event_type": "New"
+            "event_type": "after_insert"
         }).insert(ignore_links=True)
 
         queue_trigger_execution(event1.name)

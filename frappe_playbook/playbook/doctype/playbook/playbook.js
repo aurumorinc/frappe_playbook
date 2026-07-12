@@ -4,30 +4,6 @@
 frappe.ui.form.on("Playbook", {
 	refresh: function (frm) {
 		console.log("Playbook JS loaded");
-		
-		// Always hide the provider field as requested
-		frm.set_df_property("provider", "hidden", 1);
-
-		// Check available providers to auto-set if there's only one
-		frappe.db.get_list("Playbook Provider", {
-			filters: {
-				enabled: 1
-			},
-			fields: ["name"]
-		}).then(providers => {
-			if (providers.length === 1) {
-				// If exactly one provider, auto-set
-				let provider_name = providers[0].name;
-				if (frm.doc.provider !== provider_name) {
-					frm.set_value("provider", provider_name);
-				}
-			} else if (providers.length === 0) {
-				// If no providers, clear
-				if (frm.doc.provider) {
-					frm.set_value("provider", "");
-				}
-			}
-		});
 
 		if (!frm.is_new()) {
 			frm.add_custom_button(__("Playbook Builder"), function () {
