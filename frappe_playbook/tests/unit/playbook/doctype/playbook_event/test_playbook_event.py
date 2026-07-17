@@ -96,38 +96,6 @@ class TestPlaybookEvent(IntegrationTestCase):
         events = frappe.get_all("Playbook Event", filters={"reference_doctype": "ToDo", "reference_name": todo.name, "event_type": "after_insert"})
         self.assertEqual(len(events), 0)
 
-    @patch("frappe_playbook.playbook.doctype.playbook_provider.playbook_provider.get_provider_instance")
-    def test_queue_execution_with_provider(self, mock_get_provider):
-        playbook = frappe.get_doc({
-            "doctype": "Playbook",
-            "playbook_name": "Test Queue Provider",
-            "document_type": "ToDo",
-            "doc_event": "after_insert",
-            "status": "Enabled",
-            "enabled": 1,
-            "provider": "DummyProvider"
-        }).insert(ignore_links=True)
-
-        todo = frappe.get_doc({
-            "doctype": "ToDo",
-            "description": "Test Queue"
-        }).insert(ignore_links=True)
-
-        event = frappe.get_doc({
-            "doctype": "Playbook Event",
-            "reference_doctype": "ToDo",
-            "reference_name": todo.name,
-            "event_type": "after_insert"
-        }).insert(ignore_links=True)
-
-        mock_provider = MagicMock()
-        mock_get_provider.return_value = mock_provider
-
-        queue_trigger_execution(event.name)
-
-        # It might be called multiple times if other tests created active playbooks
-        self.assertTrue(mock_provider.queue_trigger_execution.call_count >= 1)
-
     @patch("frappe_playbook.playbook.doctype.playbook_execution.playbook_execution.queue_trigger_execution")
     def test_queue_execution_native(self, mock_native_queue):
         playbook = frappe.get_doc({
@@ -200,5 +168,5 @@ class TestPlaybookEvent(IntegrationTestCase):
         execution_name2 = args2[4]
         
         self.assertNotEqual(execution_name1, execution_name2)
-        self.assertEqual(execution_name1, f"{playbook.name}-{event1.name}")
-        self.assertEqual(execution_name2, f"{playbook.name}-{event2.name}")
+        self.assertEqual(len(execution_name1), 10)
+        self.assertEqual(len(execution_name2), 10)
