@@ -26,31 +26,19 @@ def queue_trigger_execution(event_name):
         }
     )
     
-    from frappe_playbook.playbook.doctype.playbook_provider.playbook_provider import get_provider_instance
     from frappe_playbook.playbook.doctype.playbook_execution.playbook_execution import queue_trigger_execution as native_queue_trigger_execution
     
     for pb in playbooks:
         playbook_doc = frappe.get_doc("Playbook", pb.name)
         if playbook_doc.meets_condition(doc):
             payload = doc.as_dict(convert_dates_to_str=True)
-            execution_name = f"{playbook_doc.name}-{event_doc.name}"
+            execution_name = frappe.generate_hash(length=10)
             
-            if playbook_doc.provider:
-                provider_instance = get_provider_instance(playbook_doc.provider)
-                provider_instance.queue_trigger_execution(
-                    playbook_doc,
-                    doc.doctype,
-                    doc.name,
-                    payload,
-                    execution_name,
-                    as_child=False
-                )
-            else:
-                native_queue_trigger_execution(
-                    playbook_doc,
-                    doc.doctype,
-                    doc.name,
-                    payload,
-                    execution_name,
-                    as_child=False
-                )
+            native_queue_trigger_execution(
+                playbook_doc,
+                doc.doctype,
+                doc.name,
+                payload,
+                execution_name,
+                as_child=False
+            )
