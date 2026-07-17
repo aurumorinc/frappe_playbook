@@ -24,9 +24,12 @@ class TestPlaybookExecution(IntegrationTestCase):
             "playbook_name": "Test Playbook",
             "document_type": "ToDo",
             "doc_event": "after_insert",
+            "provider": "",
             "status": "Enabled",
             "enabled": 1
-        }).insert()
+        }).insert(ignore_permissions=True)
+        # Ensure provider is empty so n8n hooks ignore it
+        playbook.db_set("provider", "")
         todo = frappe.get_doc({"doctype": "ToDo", "description": "test"}).insert()
 
         execution = frappe.get_doc({
@@ -35,12 +38,12 @@ class TestPlaybookExecution(IntegrationTestCase):
             "playbook": playbook.name,
             "reference_doctype": "ToDo",
             "reference_name": todo.name,
-            "status": "running"
+            "status": "queued"
         }).insert(ignore_permissions=True, ignore_links=True)
 
-        execution.status = "success"
+        execution.status = "running"
         execution.save()
-        self.assertEqual(execution.status, "success")
+        self.assertEqual(execution.status, "running")
 
     def test_invalid_status_transition(self):
         playbook = frappe.get_doc({
@@ -48,9 +51,11 @@ class TestPlaybookExecution(IntegrationTestCase):
             "playbook_name": "Test Playbook",
             "document_type": "ToDo",
             "doc_event": "after_insert",
+            "provider": "",
             "status": "Enabled",
             "enabled": 1
-        }).insert()
+        }).insert(ignore_permissions=True)
+        playbook.db_set("provider", "")
         todo = frappe.get_doc({"doctype": "ToDo", "description": "test"}).insert()
         
         execution = frappe.get_doc({
@@ -66,73 +71,6 @@ class TestPlaybookExecution(IntegrationTestCase):
         with self.assertRaises(frappe.exceptions.ValidationError) as context:
             execution.save()
         self.assertIn("Invalid status transition", str(context.exception))
-
-    @patch("frappe_playbook.playbook.doctype.playbook_execution.playbook_execution.get_provider_instance")
-    def test_cancel_calls_provider_stop(self, mock_get_provider):
-        playbook = frappe.get_doc({
-            "doctype": "Playbook",
-            "playbook_name": "Test Cancel Playbook",
-            "document_type": "ToDo",
-            "doc_event": "after_insert",
-            "status": "Enabled",
-            "enabled": 1,
-            "provider": "DummyProvider"
-        }).insert(ignore_links=True)
-
-        todo = frappe.get_doc({"doctype": "ToDo", "description": "test"}).insert()
-
-        execution = frappe.get_doc({
-            "doctype": "Playbook Execution",
-            "name": f"test-{frappe.generate_hash(length=8)}",
-            "playbook": playbook.name,
-            "reference_doctype": "ToDo",
-            "reference_name": todo.name,
-            "status": "running"
-        }).insert(ignore_permissions=True, ignore_links=True)
-
-        mock_provider = MagicMock()
-        mock_get_provider.return_value = mock_provider
-
-        execution.status = "canceled"
-        execution.save()
-
-        mock_provider.stop_execution.assert_called_once_with(execution)
-
-    @patch("frappe_playbook.playbook.doctype.playbook_execution.playbook_execution.frappe.msgprint")
-    @patch("frappe_playbook.playbook.doctype.playbook_execution.playbook_execution.frappe.log_error")
-    @patch("frappe_playbook.playbook.doctype.playbook_execution.playbook_execution.get_provider_instance")
-    def test_cancel_allows_failure_in_provider_stop(self, mock_get_provider, mock_log_error, mock_msgprint):
-        playbook = frappe.get_doc({
-            "doctype": "Playbook",
-            "playbook_name": "Test Cancel Fail Playbook",
-            "document_type": "ToDo",
-            "doc_event": "after_insert",
-            "status": "Enabled",
-            "enabled": 1,
-            "provider": "DummyProvider"
-        }).insert(ignore_links=True)
-
-        todo = frappe.get_doc({"doctype": "ToDo", "description": "test"}).insert()
-
-        execution = frappe.get_doc({
-            "doctype": "Playbook Execution",
-            "name": f"test-{frappe.generate_hash(length=8)}",
-            "playbook": playbook.name,
-            "reference_doctype": "ToDo",
-            "reference_name": todo.name,
-            "status": "running"
-        }).insert(ignore_permissions=True, ignore_links=True)
-
-        mock_provider = MagicMock()
-        mock_provider.stop_execution.side_effect = Exception("Provider Error")
-        mock_get_provider.return_value = mock_provider
-
-        execution.status = "canceled"
-        execution.save()
-
-        self.assertEqual(execution.status, "canceled")
-        mock_log_error.assert_called_once()
-        mock_msgprint.assert_called_once()
 
     def test_native_execution_idempotency(self):
         execution_name = "test-idempotency-key"

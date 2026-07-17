@@ -23,11 +23,11 @@
    "reqd": 1
   },
   {
-   "default": "running",
+   "default": "queued",
    "fieldname": "status",
    "fieldtype": "Select",
    "label": "Status",
-   "options": "running\nsuccess\nerror\nwaiting\ncanceled"
+   "options": "queued\nrunning\nsuccess\nerror\nwaiting\ncanceled"
   },
   {
    "fieldname": "reference_doctype",
