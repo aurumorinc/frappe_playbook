@@ -38,13 +38,13 @@ frappe.ui.form.on("Playbook", {
 					callback: function (r) {
 						if (r.message && r.message.status === "success") {
 							frappe.msgprint({
-								title: __('Success'),
+								title: r.message.title || __('Success'),
 								indicator: 'green',
 								message: r.message.message
 							});
 						} else if (r.message && r.message.status === "failed") {
 							frappe.msgprint({
-								title: __('No Document Found'),
+								title: r.message.title || __('Failed'),
 								indicator: 'orange',
 								message: r.message.message
 							});
