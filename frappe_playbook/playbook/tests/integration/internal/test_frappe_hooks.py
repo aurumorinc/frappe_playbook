@@ -21,6 +21,13 @@ class TestPlaybookHooks(IntegrationTestCase):
         frappe.db.rollback()
         super().tearDownClass()
 
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        frappe.db.rollback()
+        super().tearDown()
+
     def test_document_lifecycle(self):
         """Test 4: Real Document Lifecycle - Ensures correct hooks are triggered"""
         
