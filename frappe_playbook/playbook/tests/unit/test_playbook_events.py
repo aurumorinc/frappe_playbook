@@ -4,10 +4,14 @@ from frappe_playbook.playbook.doctype.playbook.playbook import create_playbook_e
 
 class TestPlaybookEvents(UnitTestCase):
     @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
+    def tearDownClass(cls):
+        frappe.db.rollback()
+        super().tearDownClass()
+
+    def setUp(self):
+        super().setUp()
         # Create a mock playbook for our tests
-        cls.playbook = frappe.get_doc({
+        self.playbook = frappe.get_doc({
             "doctype": "Playbook",
             "playbook_name": "Test Webhook Options Playbook",
             "document_type": "ToDo",
@@ -16,10 +20,9 @@ class TestPlaybookEvents(UnitTestCase):
             "status": "Enabled"
         }).insert(ignore_permissions=True)
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
         frappe.db.rollback()
-        super().tearDownClass()
+        super().tearDown()
 
     def test_event_mapping_consistency(self):
         """Test 1: Event Mapping Consistency - matches exactly"""
