@@ -8,6 +8,7 @@
  "engine": "InnoDB",
  "field_order": [
   "playbook",
+  "playbook_event",
   "status",
   "reference_doctype",
   "reference_name",
@@ -21,6 +22,12 @@
    "label": "Playbook",
    "options": "Playbook",
    "reqd": 1
+  },
+  {
+   "fieldname": "playbook_event",
+   "fieldtype": "Link",
+   "label": "Playbook Event",
+   "options": "Playbook Event"
   },
   {
    "default": "queued",
