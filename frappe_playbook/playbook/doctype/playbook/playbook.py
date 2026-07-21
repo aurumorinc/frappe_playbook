@@ -88,8 +88,7 @@ def create_playbook_event(doc, method):
         "Playbook",
         filters={
             "document_type": doc.doctype,
-            "doc_event": method,
-            "enabled": 1
+            "doc_event": method
         },
         fields=["name"]
     )
