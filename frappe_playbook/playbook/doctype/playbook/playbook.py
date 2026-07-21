@@ -61,7 +61,20 @@ class Playbook(Document):
         return True
 
     def on_trash(self):
-        pass
+        # Delete associated Playbook Events which cascades to delete Playbook Executions
+        events = frappe.get_all("Playbook Event", filters={"playbook": self.name}, fields=["name"])
+        for ev in events:
+            try:
+                frappe.delete_doc("Playbook Event", ev.name, ignore_permissions=True)
+            except Exception as e:
+                frappe.log_error(f"Error cascade deleting playbook event {ev.name} from playbook {self.name}: {str(e)}", "Playbook Cascade Delete Event Error")
+
+        # Fallback/Guard: Delete any remaining executions for this playbook
+        from frappe_playbook.playbook.doctype.playbook_execution.playbook_execution import delete_bulk
+        try:
+            delete_bulk({"playbook": self.name})
+        except Exception as e:
+            frappe.log_error(f"Error fallback cascade deleting executions for playbook {self.name}: {str(e)}", "Playbook Cascade Delete Execution Fallback Error")
 
 def create_playbook_event(doc, method):
     if frappe.flags.in_import or frappe.flags.in_patch or frappe.flags.in_install:
@@ -70,24 +83,29 @@ def create_playbook_event(doc, method):
     if doc.doctype in ("FS Job", "FS Event", "FS Match Condition", "Error Log", "Controller Job Log", "Controller Job Type", "Playbook Execution", "Playbook Event"):
         return
 
-    # Only create event if there is at least one enabled playbook for this doctype and event
-    has_playbooks = frappe.db.exists(
+    # Find all matching enabled playbooks
+    playbooks = frappe.get_all(
         "Playbook",
-        {
+        filters={
             "document_type": doc.doctype,
             "doc_event": method,
             "enabled": 1
-        }
+        },
+        fields=["name"]
     )
     
-    if has_playbooks:
-        event_doc = frappe.get_doc({
-            "doctype": "Playbook Event",
-            "reference_doctype": doc.doctype,
-            "reference_name": doc.name,
-            "event_type": method
-        })
-        event_doc.insert(ignore_permissions=True)
+    for pb in playbooks:
+        try:
+            event_doc = frappe.get_doc({
+                "doctype": "Playbook Event",
+                "playbook": pb.name,
+                "reference_doctype": doc.doctype,
+                "reference_name": doc.name,
+                "event_type": method
+            })
+            event_doc.insert(ignore_permissions=True)
+        except Exception as e:
+            frappe.log_error(f"Error creating playbook event for playbook {pb.name}: {str(e)}", "Create Playbook Event Error")
 
 @frappe.whitelist()
 def get_builder_url(playbook_name):
