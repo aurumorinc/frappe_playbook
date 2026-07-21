@@ -4,11 +4,18 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "playbook",
   "reference_doctype",
   "reference_name",
   "event_type"
  ],
  "fields": [
+  {
+   "fieldname": "playbook",
+   "fieldtype": "Link",
+   "label": "Playbook",
+   "options": "Playbook"
+  },
   {
    "fieldname": "reference_doctype",
    "fieldtype": "Link",

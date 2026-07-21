@@ -6,6 +6,15 @@ class PlaybookEvent(Document):
     def after_insert(self):
         enqueue("frappe_playbook.playbook.doctype.playbook_event.playbook_event.queue_trigger_execution", event_name=self.name)
 
+    def on_trash(self):
+        executions = frappe.get_all("Playbook Execution", filters={"playbook_event": self.name}, fields=["name"])
+        for ex in executions:
+            try:
+                doc = frappe.get_doc("Playbook Execution", ex.name)
+                doc.delete()
+            except Exception as e:
+                frappe.log_error(f"Error deleting cascade execution {ex.name} from event {self.name}: {str(e)}", "Playbook Event Cascade Delete Error")
+
 def queue_trigger_execution(event_name):
     if not frappe.db.exists("Playbook Event", event_name):
         return
@@ -17,14 +26,22 @@ def queue_trigger_execution(event_name):
         
     doc = frappe.get_doc(event_doc.reference_doctype, event_doc.reference_name)
     
-    playbooks = frappe.get_all(
-        "Playbook",
-        filters={
-            "document_type": doc.doctype,
-            "doc_event": event_doc.event_type,
-            "enabled": 1
-        }
-    )
+    playbooks = []
+    if event_doc.playbook:
+        if frappe.db.exists("Playbook", event_doc.playbook):
+            pb_status = frappe.db.get_value("Playbook", event_doc.playbook, "enabled")
+            if pb_status == 1:
+                playbooks.append(frappe._dict(name=event_doc.playbook))
+    else:
+        # Fallback for events without a pre-linked playbook
+        playbooks = frappe.get_all(
+            "Playbook",
+            filters={
+                "document_type": doc.doctype,
+                "doc_event": event_doc.event_type,
+                "enabled": 1
+            }
+        )
     
     from frappe_playbook.playbook.doctype.playbook_execution.playbook_execution import queue_trigger_execution as native_queue_trigger_execution
     
@@ -40,5 +57,6 @@ def queue_trigger_execution(event_name):
                 doc.name,
                 payload,
                 execution_name,
-                as_child=False
+                as_child=False,
+                playbook_event=event_doc.name
             )
